@@ -7,6 +7,7 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Tools\DsnParser;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
+use Doctrine\ORM\Proxy\ProxyFactory;
 use Psr\Container\ContainerInterface;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
@@ -26,6 +27,10 @@ return [
         }
 
         $config = ORMSetup::createAttributeMetadataConfiguration($paths, $isDevMode);
+        $proxyDir = '/tmp/doctrine/proxies';
+        @mkdir($proxyDir, 0775, true);
+        $config->setProxyDir($proxyDir);
+        $config->setAutoGenerateProxyClasses(ProxyFactory::AUTOGENERATE_FILE_NOT_EXISTS);
         $connection = DriverManager::getConnection($dbParams, $config);
 
         return new EntityManager($connection, $config);
