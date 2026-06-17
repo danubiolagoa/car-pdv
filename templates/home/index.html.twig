@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bem-vindo - {{ app_name }}{% endblock %}
+
+{% block body %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0C2340] to-[#1A3A5C]">
+    <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4">
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-[#2563EB] rounded-xl flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900">{{ app_name }}</h1>
+            <p class="text-gray-500 mt-2">Sistema PDV para oficinas mecânicas e lojas de acessórios</p>
+        </div>
+
+        <div class="space-y-4">
+            <a href="/login" class="block w-full bg-[#2563EB] hover:bg-[#1A3A5C] text-white font-medium py-3 px-4 rounded-lg text-center transition-colors">
+                Entrar
+            </a>
+            <a href="/register" class="block w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 rounded-lg text-center transition-colors">
+                Criar conta
+            </a>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-gray-200">
+            <p class="text-xs text-gray-400 text-center">
+                Multi-tenant • Controle de estoque • PDV • Agendamentos
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

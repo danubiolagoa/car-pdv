@@ -1,0 +1,336 @@
+{% extends 'base.html.twig' %}
+{% import 'macros.html.twig' as ui %}
+
+{% block title %}PDV - {{ app_name }}{% endblock %}
+
+{% block body %}
+<div class="min-h-screen bg-gray-50" x-data="pdvApp()">
+    {{ ui.sidebar('pdv', user) }}
+
+    <div class="lg:ml-64">
+        {{ ui.header('PDV - Ponto de Venda') }}
+
+        <main class="p-6 lg:p-8">
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <div class="lg:col-span-3 space-y-4">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                        <input type="text" x-model="search" @input.debounce.300ms="searchProducts()" placeholder="Buscar produto por nome, SKU ou código de barras..." class="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent">
+
+                        <div x-show="searchResults.length > 0" class="mt-3 border border-gray-200 rounded-lg max-h-80 overflow-y-auto">
+                            <template x-for="p in searchResults" :key="p.id">
+                                <button @click="addToCart(p)" class="w-full px-4 py-2 hover:bg-gray-50 flex items-center justify-between border-b border-gray-100 last:border-b-0 text-left">
+                                    <div>
+                                        <p class="font-medium text-gray-900 text-sm" x-text="p.name"></p>
+                                        <p class="text-xs text-gray-500" x-text="`${p.sku} • Estoque: ${p.current_stock}`"></p>
+                                    </div>
+                                    <p class="font-bold text-[#F59E0B]" x-text="'R$ ' + Number(p.sale_price).toFixed(2)"></p>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                        <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                            <h3 class="font-semibold text-gray-900">Carrinho (<span x-text="cart.length"></span> itens)</h3>
+                            <button @click="clearCart()" x-show="cart.length > 0" class="text-sm text-red-600 hover:text-red-700">Limpar</button>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm" x-show="cart.length > 0">
+                                <thead>
+                                    <tr class="bg-gray-50 border-b border-gray-200">
+                                        <th class="text-left px-3 py-2 font-medium text-gray-500">Produto</th>
+                                        <th class="text-center px-3 py-2 font-medium text-gray-500 w-24">Qtd</th>
+                                        <th class="text-right px-3 py-2 font-medium text-gray-500 w-28">Preço</th>
+                                        <th class="text-right px-3 py-2 font-medium text-gray-500 w-28">Total</th>
+                                        <th class="w-8"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="(item, idx) in cart" :key="idx">
+                                        <tr class="border-b border-gray-100">
+                                            <td class="px-3 py-2">
+                                                <p class="font-medium text-gray-900" x-text="item.name"></p>
+                                                <p class="text-xs text-gray-500" x-text="item.sku"></p>
+                                            </td>
+                                            <td class="px-3 py-2">
+                                                <input type="number" step="0.001" min="0.001" x-model.number="item.quantity" @change="updateItem(idx)" class="w-full px-2 py-1 border border-gray-300 rounded text-sm text-center">
+                                            </td>
+                                            <td class="px-3 py-2 text-right">
+                                                <input type="number" step="0.01" min="0" x-model.number="item.unit_price" @change="updateItem(idx)" class="w-full px-2 py-1 border border-gray-300 rounded text-sm text-right">
+                                            </td>
+                                            <td class="px-3 py-2 text-right font-medium" x-text="'R$ ' + (item.quantity * item.unit_price).toFixed(2)"></td>
+                                            <td class="px-3 py-2 text-center">
+                                                <button @click="removeItem(idx)" class="text-red-500 hover:text-red-700">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                            <div x-show="cart.length === 0" class="px-4 py-12 text-center text-gray-500">
+                                <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                </div>
+                                <p class="font-medium">Carrinho vazio</p>
+                                <p class="text-sm mt-1">Busque produtos acima para começar</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                        <h3 class="font-semibold text-gray-900 mb-3">Cliente</h3>
+                        <input type="text" x-model="customerSearch" @input.debounce.300ms="searchCustomers()" placeholder="Buscar cliente por nome ou CPF/CNPJ..." class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F59E0B] focus:border-transparent">
+                        <div x-show="selectedCustomer" class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+                            <div>
+                                <p class="font-medium text-gray-900 text-sm" x-text="selectedCustomer?.name"></p>
+                                <p class="text-xs text-gray-500" x-text="selectedCustomer?.cpf_cnpj || 'Sem CPF/CNPJ'"></p>
+                            </div>
+                            <button @click="clearCustomer()" class="text-red-600 hover:text-red-700 text-xs">Remover</button>
+                        </div>
+                        <div x-show="customerSearch && !selectedCustomer && customerResults.length > 0" class="mt-3 border border-gray-200 rounded-lg max-h-48 overflow-y-auto">
+                            <template x-for="c in customerResults" :key="c.id">
+                                <button @click="selectCustomer(c)" class="w-full px-3 py-2 hover:bg-gray-50 flex items-center justify-between border-b border-gray-100 last:border-b-0 text-left">
+                                    <div>
+                                        <p class="font-medium text-gray-900 text-sm" x-text="c.name"></p>
+                                        <p class="text-xs text-gray-500" x-text="c.cpf_cnpj || '-'"></p>
+                                    </div>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                        <h3 class="font-semibold text-gray-900 mb-3">Resumo</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-500">Subtotal</span>
+                                <span class="font-medium" x-text="'R$ ' + subtotal.toFixed(2)"></span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500">Desconto</span>
+                                <div class="flex gap-1">
+                                    <input type="number" step="0.01" min="0" x-model.number="discount" class="w-20 px-2 py-1 border border-gray-300 rounded text-sm text-right">
+                                    <select x-model="discountType" class="px-2 py-1 border border-gray-300 rounded text-sm">
+                                        <option value="value">R$</option>
+                                        <option value="percent">%</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="border-t border-gray-200 pt-2 flex justify-between text-lg font-bold">
+                                <span>Total</span>
+                                <span class="text-[#F59E0B]" x-text="'R$ ' + total.toFixed(2)"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-semibold text-gray-900">Pagamento</h3>
+                            <button @click="addPayment()" class="text-xs text-[#2563EB] hover:text-[#1D4ED8]">+ Adicionar</button>
+                        </div>
+                        <template x-for="(pay, idx) in payments" :key="idx">
+                            <div class="flex gap-2 mb-2">
+                                <select x-model="pay.method" class="flex-1 px-2 py-2 border border-gray-300 rounded-lg text-sm">
+                                    <option value="cash">Dinheiro</option>
+                                    <option value="pix">PIX</option>
+                                    <option value="debit">Cartão Débito</option>
+                                    <option value="credit">Cartão Crédito</option>
+                                    <option value="transfer">Transferência</option>
+                                    <option value="check">Cheque</option>
+                                    <option value="other">Outro</option>
+                                </select>
+                                <input type="number" step="0.01" min="0" x-model.number="pay.amount" placeholder="Valor" class="w-28 px-2 py-2 border border-gray-300 rounded-lg text-sm text-right">
+                                <button @click="removePayment(idx)" x-show="payments.length > 1" class="px-2 text-red-500 hover:text-red-700">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                            </div>
+                        </template>
+                        <div class="mt-3 flex justify-between text-sm">
+                            <span class="text-gray-500">Pago</span>
+                            <span :class="Math.abs(totalPaid - total) < 0.01 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'" x-text="'R$ ' + totalPaid.toFixed(2)"></span>
+                        </div>
+                        <div x-show="change > 0" class="flex justify-between text-sm">
+                            <span class="text-gray-500">Troco</span>
+                            <span class="text-blue-600 font-semibold" x-text="'R$ ' + change.toFixed(2)"></span>
+                        </div>
+                    </div>
+
+                    <button @click="finalizeSale()" :disabled="cart.length === 0 || Math.abs(totalPaid - total) >= 0.01 || saving" class="w-full py-4 bg-[#10B981] hover:bg-[#059669] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold rounded-xl text-lg transition-colors shadow-sm">
+                        <span x-show="!saving">FINALIZAR VENDA</span>
+                        <span x-show="saving">Processando...</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div x-show="successModal" class="fixed inset-0 z-60 flex items-center justify-center bg-black/50" style="display: none;">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md mx-4 p-8 text-center">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Venda finalizada!</h3>
+            <p class="text-gray-500 mb-1">Número: <strong x-text="lastSaleNumber"></strong></p>
+            <p class="text-2xl font-bold text-[#F59E0B] mb-6" x-text="'R$ ' + lastSaleTotal.toFixed(2)"></p>
+            <button @click="newSale()" class="w-full py-3 bg-[#2563EB] text-white rounded-lg hover:bg-[#1D4ED8] font-medium">Nova venda</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function pdvApp() {
+    return {
+        sidebarOpen: false,
+        search: '',
+        searchResults: [],
+        cart: [],
+        customerSearch: '',
+        customerResults: [],
+        selectedCustomer: null,
+        discount: 0,
+        discountType: 'value',
+        payments: [{ method: 'cash', amount: 0 }],
+        saving: false,
+        successModal: false,
+        lastSaleNumber: '',
+        lastSaleTotal: 0,
+
+        get subtotal() {
+            return this.cart.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+        },
+        get total() {
+            const disc = this.discountType === 'percent' ? (this.subtotal * this.discount / 100) : this.discount;
+            return Math.max(0, this.subtotal - disc);
+        },
+        get totalPaid() {
+            return this.payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+        },
+        get change() {
+            return Math.max(0, this.totalPaid - this.total);
+        },
+
+        async searchProducts() {
+            if (!this.search) { this.searchResults = []; return; }
+            try {
+                const res = await fetch(`/api/products?search=${encodeURIComponent(this.search)}`);
+                const data = await res.json();
+                this.searchResults = (data.products || []).filter(p => p.is_active && !p.is_service).slice(0, 10);
+            } catch (e) {
+                console.error(e);
+            }
+        },
+
+        addToCart(p) {
+            const existing = this.cart.find(i => i.product_id === p.id);
+            if (existing) {
+                existing.quantity += 1;
+            } else {
+                this.cart.push({
+                    product_id: p.id,
+                    name: p.name,
+                    sku: p.sku,
+                    quantity: 1,
+                    unit_price: Number(p.sale_price),
+                });
+            }
+            this.search = '';
+            this.searchResults = [];
+        },
+
+        updateItem(idx) {
+            if (this.cart[idx].quantity <= 0) this.cart[idx].quantity = 0.001;
+            if (this.cart[idx].unit_price < 0) this.cart[idx].unit_price = 0;
+        },
+
+        removeItem(idx) {
+            this.cart.splice(idx, 1);
+        },
+
+        clearCart() {
+            if (confirm('Limpar todos os itens do carrinho?')) this.cart = [];
+        },
+
+        async searchCustomers() {
+            if (!this.customerSearch) { this.customerResults = []; return; }
+            try {
+                const res = await fetch(`/api/customers?search=${encodeURIComponent(this.customerSearch)}`);
+                const data = await res.json();
+                this.customerResults = (data.customers || []).slice(0, 8);
+            } catch (e) {
+                console.error(e);
+            }
+        },
+
+        selectCustomer(c) {
+            this.selectedCustomer = c;
+            this.customerSearch = '';
+            this.customerResults = [];
+        },
+
+        clearCustomer() {
+            this.selectedCustomer = null;
+        },
+
+        addPayment() {
+            this.payments.push({ method: 'cash', amount: 0 });
+        },
+
+        removePayment(idx) {
+            this.payments.splice(idx, 1);
+        },
+
+        async finalizeSale() {
+            if (this.cart.length === 0) return;
+            if (Math.abs(this.totalPaid - this.total) >= 0.01) {
+                alert('O valor pago precisa ser igual ao total');
+                return;
+            }
+            this.saving = true;
+            try {
+                const payload = {
+                    customer_id: this.selectedCustomer?.id || null,
+                    items: this.cart.map(i => ({ product_id: i.product_id, quantity: i.quantity, unit_price: i.unit_price })),
+                    discount: this.discount,
+                    discount_type: this.discountType,
+                    payments: this.payments,
+                };
+                const res = await fetch('/api/sales', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                if (!res.ok) {
+                    const err = await res.json();
+                    alert(err.error || 'Erro ao finalizar venda');
+                    return;
+                }
+                const data = await res.json();
+                this.lastSaleNumber = data.sale.sale_number;
+                this.lastSaleTotal = Number(data.sale.total);
+                this.successModal = true;
+            } catch (e) {
+                alert('Erro de conexão');
+            } finally {
+                this.saving = false;
+            }
+        },
+
+        newSale() {
+            this.cart = [];
+            this.selectedCustomer = null;
+            this.customerSearch = '';
+            this.discount = 0;
+            this.discountType = 'value';
+            this.payments = [{ method: 'cash', amount: 0 }];
+            this.successModal = false;
+        }
+    };
+}
+</script>
+{% endblock %}

@@ -1,0 +1,11 @@
+.env
+.env.*
+.gitignore
+.gitattributes
+.github/
+.preview/
+node_modules/
+tests/
+*.md
+test-*.php
+generate-*.php

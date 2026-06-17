@@ -1,0 +1,36 @@
+{
+    "version": 2,
+    "framework": null,
+    "functions": {
+        "api/index.php": {
+            "runtime": "vercel-php@0.7.3",
+            "memory": 512,
+            "maxDuration": 30
+        }
+    },
+    "rewrites": [
+        { "source": "/(.*)", "destination": "/api/index.php" }
+    ],
+    "headers": [
+        {
+            "source": "/(.*)",
+            "headers": [
+                {
+                    "key": "X-Frame-Options",
+                    "value": "DENY"
+                },
+                {
+                    "key": "X-Content-Type-Options",
+                    "value": "nosniff"
+                },
+                {
+                    "key": "Referrer-Policy",
+                    "value": "strict-origin-when-cross-origin"
+                }
+            ]
+        }
+    ],
+    "env": {
+        "PHP_VERSION": "8.2"
+    }
+}

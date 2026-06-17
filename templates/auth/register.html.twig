@@ -1,0 +1,74 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Criar conta - {{ app_name }}{% endblock %}
+
+{% block body %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0C2340] to-[#1A3A5C] px-4 py-8">
+    <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full" x-data="{ 
+        tenant_name: '', slug: '', name: '', email: '', password: '', 
+        loading: false, error: '' 
+    }" @submit.prevent="
+        loading = true;
+        error = '';
+        fetch('/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tenant_name, slug, name, email, password, business_type: 'automotive' })
+        })
+        .then(r => r.json().then(data => ({ ok: r.ok, data })))
+        .then(({ ok, data }) => {
+            loading = false;
+            if (ok && data.token) {
+                localStorage.setItem('car_pdv_token', data.token);
+                window.location.href = '/app/dashboard';
+            } else {
+                error = data.error || 'Erro ao criar conta';
+            }
+        })
+        .catch(() => {
+            loading = false;
+            error = 'Erro ao conectar com o servidor';
+        });
+    ">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold text-gray-900">Criar conta</h1>
+            <p class="text-gray-500 mt-2">Comece a usar o {{ app_name }}</p>
+        </div>
+
+        <div x-show="error" x-transition class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm" x-text="error"></div>
+
+        <form class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nome da oficina/loja</label>
+                <input type="text" x-model="tenant_name" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2563EB] focus:border-[#2563EB] outline-none transition-colors">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Identificador (slug)</label>
+                <input type="text" x-model="slug" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2563EB] focus:border-[#2563EB] outline-none transition-colors">
+                <p class="text-xs text-gray-500 mt-1">Usado para identificar sua loja. Ex: oficina-lagoa</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Seu nome</label>
+                <input type="text" x-model="name" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2563EB] focus:border-[#2563EB] outline-none transition-colors">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">E-mail</label>
+                <input type="email" x-model="email" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2563EB] focus:border-[#2563EB] outline-none transition-colors">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+                <input type="password" x-model="password" required minlength="6" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2563EB] focus:border-[#2563EB] outline-none transition-colors">
+            </div>
+            <button type="submit" :disabled="loading" class="w-full bg-[#2563EB] hover:bg-[#1A3A5C] disabled:opacity-50 text-white font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center">
+                <svg x-show="loading" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <span x-text="loading ? 'Criando conta...' : 'Criar conta'"></span>
+            </button>
+        </form>
+
+        <div class="mt-6 text-center text-sm">
+            <span class="text-gray-500">Já tem conta?</span>
+            <a href="/login" class="text-[#2563EB] hover:underline font-medium ml-1">Entrar</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

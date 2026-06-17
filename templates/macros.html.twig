@@ -1,0 +1,54 @@
+{% macro sidebar(active, user) %}
+<aside class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0C2340] text-white transform transition-transform duration-200 ease-in-out lg:translate-x-0"
+       :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
+    <div class="flex items-center justify-between h-16 px-6 border-b border-[#1A3A5C]">
+        <span class="text-lg font-bold">{{ app_name }}</span>
+        <button @click="sidebarOpen = false" class="lg:hidden text-gray-300 hover:text-white">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+    </div>
+    <nav class="p-4 space-y-1">
+        {% set items = [
+            {key: 'dashboard', href: '/app/dashboard', label: 'Dashboard', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z'},
+            {key: 'pdv', href: '/app/pdv', label: 'PDV', icon: 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z'},
+            {key: 'products', href: '/app/products', label: 'Produtos', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4'},
+            {key: 'inventory', href: '/app/inventory', label: 'Estoque', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01'},
+            {key: 'customers', href: '/app/customers', label: 'Clientes', icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z'},
+            {key: 'appointments', href: '/app/appointments', label: 'Agendamentos', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'},
+        ] %}
+        {% for item in items %}
+            <a href="{{ item.href }}"
+               class="flex items-center px-4 py-3 rounded-lg transition-colors {% if active == item.key %}bg-[#1A3A5C] border-l-4 border-[#F59E0B] text-white{% else %}text-gray-300 hover:bg-[#1A3A5C] hover:text-white{% endif %}">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ item.icon }}"></path></svg>
+                {{ item.label }}
+            </a>
+        {% endfor %}
+    </nav>
+    <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-[#1A3A5C]">
+        <div class="flex items-center">
+            <div class="w-8 h-8 rounded-full bg-[#F59E0B] flex items-center justify-center text-sm font-bold text-white">
+                {{ user.name|first|upper }}
+            </div>
+            <div class="ml-3">
+                <p class="text-sm font-medium">{{ user.name }}</p>
+                <p class="text-xs text-gray-400">{{ user.role|upper }}</p>
+            </div>
+        </div>
+        <form method="POST" action="/auth/logout" class="mt-3">
+            <button type="submit" class="w-full text-left text-xs text-gray-400 hover:text-white">Sair</button>
+        </form>
+    </div>
+</aside>
+{% endmacro %}
+
+{% macro header(title) %}
+<header class="bg-white shadow-sm h-16 flex items-center justify-between px-6 lg:px-8">
+    <button @click="sidebarOpen = true" class="lg:hidden text-gray-500 hover:text-gray-700">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+    </button>
+    <h2 class="text-lg font-semibold text-gray-800">{{ title }}</h2>
+    <div class="flex items-center space-x-4">
+        <span class="text-sm text-gray-500" x-text="new Date().toLocaleDateString('pt-BR')"></span>
+    </div>
+</header>
+{% endmacro %}
