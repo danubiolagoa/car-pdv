@@ -25,13 +25,11 @@
         "vlucas/phpdotenv": "^5.6",
         "twig/twig": "^3.14",
         "symfony/cache": "^7.0",
-        "symfony/var-exporter": "^7.0"
-    },
-    "require-dev": {
+        "symfony/var-exporter": "^7.0",
         "phpunit/phpunit": "^11.0",
-        "phpstan/phpstan": "^1.12",
-        "friendsofphp/php-cs-fixer": "^3.64"
+        "phpstan/phpstan": "^1.12"
     },
+    "require-dev": {},
     "autoload": {
         "psr-4": {
             "App\\": "src/",
