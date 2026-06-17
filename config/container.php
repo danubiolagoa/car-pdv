@@ -33,9 +33,10 @@ return [
 
     Environment::class => function () {
         $loader = new FilesystemLoader(__DIR__ . '/../templates');
+        $isDev = ($_ENV['APP_ENV'] ?? 'production') === 'development';
         $twig = new Environment($loader, [
-            'cache' => ($_ENV['APP_ENV'] ?? 'production') === 'development' ? false : __DIR__ . '/../cache/twig',
-            'debug' => ($_ENV['APP_ENV'] ?? 'production') === 'development',
+            'cache' => $isDev || getenv('VERCEL') ? false : __DIR__ . '/../cache/twig',
+            'debug' => $isDev,
         ]);
 
         $twig->addGlobal('app_name', $_ENV['APP_NAME'] ?? 'CAR-PDV');
