@@ -60,6 +60,13 @@ Acesse http://localhost:8080
 
 O deploy é feito automaticamente via GitHub Actions para o Vercel quando há push na branch `main`.
 
+## Documentação
+
+Veja a pasta [`docs/`](docs/) para documentação detalhada:
+- [PRD](docs/PRD.md) - Product Requirements Document
+- [Arquitetura](docs/architecture.md) - Decisões técnicas e estrutura
+- [Planejamento](docs/planning.md) - Escopo, fases e roadmap
+
 ## Licença
 
 MIT
